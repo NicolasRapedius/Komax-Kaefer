@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36414.22 d17.14
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Komax-Kaefer", "Komax-Kaefer.csproj", "{C1017BB2-A246-4CE6-9B53-56656189C5B9}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C1017BB2-A246-4CE6-9B53-56656189C5B9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C1017BB2-A246-4CE6-9B53-56656189C5B9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C1017BB2-A246-4CE6-9B53-56656189C5B9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C1017BB2-A246-4CE6-9B53-56656189C5B9}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {FCAB4D09-DEC5-4F33-AEA0-657B20B2D4FD}
+	EndGlobalSection
+EndGlobal
