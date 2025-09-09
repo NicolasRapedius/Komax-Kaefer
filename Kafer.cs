@@ -35,7 +35,7 @@ namespace Komax_Kaefer
                 grid[X, Y] = true; // Schwarz f‰rben
                 Richtung = (Direction)(((int)Richtung + 1) % 4); // Rechts drehen
             }
-            else // Schwarz
+            else
             {
                 grid[X, Y] = false; // Weiﬂ f‰rben
                 Richtung = (Direction)(((int)Richtung + 3) % 4); // Links drehen

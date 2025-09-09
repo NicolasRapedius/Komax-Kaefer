@@ -14,19 +14,19 @@ namespace Komax_Kaefer
         private const int GridHeight = 200;
         private bool[,] grid;
         private Kafer kafer;
-        private int zoom = 4; // Standardwert
+        private int zoom = 4;
         private WriteableBitmap bitmap;
         private CancellationTokenSource cts;
         private Task simulationTask;
 
-        // Konstruktor: Initialisiert das Fenster und registriert das Loaded-Event
+        
         public MainWindow()
         {
             InitializeComponent();
             Loaded += MainWindow_Loaded;
         }
 
-        // Wird beim Laden des Fensters aufgerufen. Initialisiert Zoom, Grid und Darstellung.
+        
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
             zoom = (int)ZoomSlider.Value;
@@ -90,7 +90,7 @@ namespace Komax_Kaefer
             bitmap.WritePixels(new Int32Rect(0, 0, width, height), pixels, stride, 0);
         }
 
-        // Wird aufgerufen, wenn der ZoomSlider verändert wird. Aktualisiert Zoom und Darstellung.
+        //Aktualisiert Zoom und Darstellung.
         private void ZoomSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             zoom = (int)ZoomSlider.Value;
@@ -102,7 +102,6 @@ namespace Komax_Kaefer
             DrawGrid();
         }
 
-        // Startet die Simulation (Käfer läuft los)
         private void StartButton_Click(object sender, RoutedEventArgs e)
         {
             StartButton.IsEnabled = false;
@@ -112,7 +111,6 @@ namespace Komax_Kaefer
             simulationTask = Task.Run(() => RunSimulation(cts.Token));
         }
 
-        // Stoppt die Simulation (Käfer bleibt stehen)
         private void StopButton_Click(object sender, RoutedEventArgs e)
         {
             cts?.Cancel();
@@ -121,7 +119,6 @@ namespace Komax_Kaefer
             ZoomSlider.IsEnabled = true;
         }
 
-        // Führt die Simulation im Hintergrund aus (Käfer bewegt sich und das Grid wird aktualisiert)
         private void RunSimulation(CancellationToken token)
         {
             try
