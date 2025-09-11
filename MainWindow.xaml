@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Komax_Kaefer"
         mc:Ignorable="d"
-        Title="Komax-Käfer" Height="900" Width="900">
+        Title="Komax Beetle" Height="1200" Width="1100">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -14,7 +14,8 @@
         <StackPanel Orientation="Horizontal" Margin="10">
             <Button x:Name="StartButton" Content="Start" Width="80" Margin="0,0,10,0" Click="StartButton_Click"/>
             <Button x:Name="StopButton" Content="Stop" Width="80" Margin="0,0,10,0" Click="StopButton_Click" IsEnabled="False"/>
-            <TextBlock Text="Feldgröße:" VerticalAlignment="Center" Margin="10,0,0,0"/>
+            <Button x:Name="MusterButton" Content="Select Pattern" Width="120" Margin="0,0,10,0" Click="MusterButton_Click"/>
+            <TextBlock Text="Cell size:" VerticalAlignment="Center" Margin="10,0,0,0"/>
             <Slider x:Name="ZoomSlider" Minimum="1" Maximum="5" Value="4" Width="100" Margin="5,0,0,0" ValueChanged="ZoomSlider_ValueChanged" IsSnapToTickEnabled="True" TickFrequency="1"/>
             <TextBlock x:Name="ZoomValueText" Text="4 px" VerticalAlignment="Center" Margin="5,0,0,0"/>
         </StackPanel>

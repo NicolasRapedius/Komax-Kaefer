@@ -8,6 +8,13 @@ using Komax_Kaefer;
 
 namespace Komax_Kaefer
 {
+    public enum Startmuster
+    {
+        Leer,
+        Schachbrett,
+        Zufall
+    }
+
     public partial class MainWindow : Window
     {
         private const int GridWidth = 200;
@@ -18,21 +25,27 @@ namespace Komax_Kaefer
         private WriteableBitmap bitmap;
         private CancellationTokenSource cts;
         private Task simulationTask;
+        private Startmuster aktuellesMuster = Startmuster.Leer;
+        private Random random = new Random();
 
-        
         public MainWindow()
         {
             InitializeComponent();
             Loaded += MainWindow_Loaded;
         }
 
-        
+        // Initialisiert Zoom, Grid und Darstellung
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
+            // zum Musterwählen
+            var musterDialog = new MusterDialog { Owner = this };
+            if (musterDialog.ShowDialog() == true)
+            {
+                aktuellesMuster = musterDialog.GewaehltesMuster;
+            }
             zoom = (int)ZoomSlider.Value;
             ZoomValueText.Text = $"{zoom} px";
-            InitGrid();
-            DrawGrid();
+            SetzeStartmuster(aktuellesMuster);
         }
 
         // Initialisiert das Grid, den Käfer und das Bitmap für die Anzeige
@@ -42,6 +55,48 @@ namespace Komax_Kaefer
             kafer = new Kafer(GridWidth / 2, GridHeight / 2, Direction.Up, grid);
             bitmap = new WriteableBitmap(GridWidth * zoom, GridHeight * zoom, 96, 96, PixelFormats.Bgra32, null);
             GridImage.Source = bitmap;
+        }
+
+        // Setzt das gewünschte Startmuster und initialisiert das Grid entsprechend
+        private void SetzeStartmuster(Startmuster muster)
+        {
+            aktuellesMuster = muster;
+            InitGrid();
+            switch (muster)
+            {
+                case Startmuster.Schachbrett:
+                    SetzeSchachbrettmuster();
+                    break;
+                case Startmuster.Zufall:
+                    SetzeZufallsmuster();
+                    break;
+                case Startmuster.Leer:
+                default:
+                    break;
+            }
+            DrawGrid();
+        }
+
+        private void SetzeSchachbrettmuster()
+        {
+            for (int y = 0; y < GridHeight; y++)
+            {
+                for (int x = 0; x < GridWidth; x++)
+                {
+                    grid[x, y] = (x + y) % 2 == 0;
+                }
+            }
+        }
+
+        private void SetzeZufallsmuster()
+        {
+            for (int y = 0; y < GridHeight; y++)
+            {
+                for (int x = 0; x < GridWidth; x++)
+                {
+                    grid[x, y] = random.Next(2) == 0;
+                }
+            }
         }
 
         // Zeichnet das Grid und den Käfer auf das Bitmap
@@ -72,6 +127,7 @@ namespace Komax_Kaefer
                     {
                         r = g = b = 255; // Weiß
                     }
+                    // Zoom
                     for (int dy = 0; dy < zoom; dy++)
                     {
                         for (int dx = 0; dx < zoom; dx++)
@@ -129,10 +185,22 @@ namespace Komax_Kaefer
                         continue;
                     kafer.Schritt();
                     Dispatcher.Invoke(DrawGrid);
-                    Thread.Sleep(10);
+                    //Thread.Sleep(10);
                 }
             }
             catch (OperationCanceledException) { }
         }
+
+        // Öffnet das Muster-Auswahlfenster, übernimmt das gewählte Muster und aktualisiert das Grid
+        private void MusterButton_Click(object sender, RoutedEventArgs e)
+        {
+            var musterDialog = new MusterDialog { Owner = this };
+            if (musterDialog.ShowDialog() == true)
+            {
+                aktuellesMuster = musterDialog.GewaehltesMuster;
+                SetzeStartmuster(aktuellesMuster);
+            }
+        }
+
     }
 }
