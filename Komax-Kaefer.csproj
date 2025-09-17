@@ -9,4 +9,8 @@
     <UseWPF>true</UseWPF>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Komax-Kaefer.Backend\Komax-Kaefer.Backend.csproj" />
+  </ItemGroup>
+
 </Project>

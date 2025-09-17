@@ -2,44 +2,45 @@ using System;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using Komax_Kaefer.Backend;
 
 namespace Komax_Kaefer
 {
-    public partial class MusterDialog : Window
+    public partial class PatternDialogue : Window
     {
-        public Startmuster GewaehltesMuster { get; private set; } = Startmuster.Leer;
+        public StartPattern SelectedPattern { get; private set; } = StartPattern.Empty;
 
-        public MusterDialog()
+        public PatternDialogue()
         {
             InitializeComponent();
-            PreviewLeer.Source = ErzeugeVorschau(Startmuster.Leer);
-            PreviewSchachbrett.Source = ErzeugeVorschau(Startmuster.Schachbrett);
-            PreviewZufall.Source = ErzeugeVorschau(Startmuster.Zufall);
+            PreviewEmpty.Source = GeneratePreview(StartPattern.Empty);
+            PreviewChessboard.Source = GeneratePreview(StartPattern.Chessboard);
+            PreviewRandom.Source = GeneratePreview(StartPattern.Random);
         }
 
-        // Erzeugt eine Bitmap-Vorschau für das angegebene Muster
-        private ImageSource ErzeugeVorschau(Startmuster muster)
+        // Generates a bitmap preview for the given pattern
+        private ImageSource GeneratePreview(StartPattern pattern)
         {
             int size = 20;
             bool[,] previewGrid = new bool[size, size];
-            var random = new Random(42); // Fester Seed für konsistente Vorschau
-            switch (muster)
+            var random = new Random(42); // Fixed seed for consistent preview
+            switch (pattern)
             {
-                case Startmuster.Schachbrett:
+                case StartPattern.Chessboard:
                     for (int y = 0; y < size; y++)
                         for (int x = 0; x < size; x++)
                             previewGrid[x, y] = (x + y) % 2 == 0;
                     break;
-                case Startmuster.Zufall:
+                case StartPattern.Random:
                     for (int y = 0; y < size; y++)
                         for (int x = 0; x < size; x++)
                             previewGrid[x, y] = random.Next(2) == 0;
                     break;
-                case Startmuster.Leer:
+                case StartPattern.Empty:
                 default:
                     break;
             }
-            // erzeugt Vorschau-Bitmap
+            // Generate preview bitmap
             WriteableBitmap bmp = new WriteableBitmap(size, size, 96, 96, PixelFormats.Bgra32, null);
             int stride = size * 4;
             byte[] pixels = new byte[size * size * 4];
@@ -59,22 +60,22 @@ namespace Komax_Kaefer
             return bmp;
         }
 
-        private void Leer_Click(object sender, RoutedEventArgs e)
+        private void Empty_Click(object sender, RoutedEventArgs e)
         {
-            GewaehltesMuster = Startmuster.Leer;
+            SelectedPattern = StartPattern.Empty;
             DialogResult = true;
         }
-        private void Schachbrett_Click(object sender, RoutedEventArgs e)
+        private void Chessboard_Click(object sender, RoutedEventArgs e)
         {
-            GewaehltesMuster = Startmuster.Schachbrett;
+            SelectedPattern = StartPattern.Chessboard;
             DialogResult = true;
         }
-        private void Zufall_Click(object sender, RoutedEventArgs e)
+        private void Random_Click(object sender, RoutedEventArgs e)
         {
-            GewaehltesMuster = Startmuster.Zufall;
+            SelectedPattern = StartPattern.Random;
             DialogResult = true;
         }
-        private void Abbrechen_Click(object sender, RoutedEventArgs e)
+        private void Cancel_Click(object sender, RoutedEventArgs e)
         {
             DialogResult = false;
         }

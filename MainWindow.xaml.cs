@@ -4,130 +4,143 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using Komax_Kaefer;
+using Komax_Kaefer.Backend;
 
 namespace Komax_Kaefer
 {
-    public enum Startmuster
-    {
-        Leer,
-        Schachbrett,
-        Zufall
-    }
-
     public partial class MainWindow : Window
     {
-        private const int GridWidth = 200;
-        private const int GridHeight = 200;
-        private bool[,] grid;
-        private Kafer kafer;
-        private int zoom = 4;
-        private WriteableBitmap bitmap;
+        private GridModel gridModel;
         private CancellationTokenSource cts;
         private Task simulationTask;
-        private Startmuster aktuellesMuster = Startmuster.Leer;
-        private Random random = new Random();
+        private int zoom = 4;
+        private WriteableBitmap bitmap;
+        private bool isRunning = false;
 
         public MainWindow()
         {
             InitializeComponent();
+            gridModel = new GridModel(200, 200);
+            AddAntToCenter();
             Loaded += MainWindow_Loaded;
+            ZoomSlider.ValueChanged += ZoomSlider_ValueChanged;
+            PatternButton.Click += PatternButton_Click;
+            StartButton.Click += StartButton_Click;
+            StopButton.Click += StopButton_Click;
+            UpdateButtonStates();
         }
 
-        // Initialisiert Zoom, Grid und Darstellung
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
-            // zum Musterwählen
-            var musterDialog = new MusterDialog { Owner = this };
-            if (musterDialog.ShowDialog() == true)
-            {
-                aktuellesMuster = musterDialog.GewaehltesMuster;
-            }
             zoom = (int)ZoomSlider.Value;
             ZoomValueText.Text = $"{zoom} px";
-            SetzeStartmuster(aktuellesMuster);
-        }
-
-        // Initialisiert das Grid, den Käfer und das Bitmap für die Anzeige
-        private void InitGrid()
-        {
-            grid = new bool[GridWidth, GridHeight];
-            kafer = new Kafer(GridWidth / 2, GridHeight / 2, Direction.Up, grid);
-            bitmap = new WriteableBitmap(GridWidth * zoom, GridHeight * zoom, 96, 96, PixelFormats.Bgra32, null);
-            GridImage.Source = bitmap;
-        }
-
-        // Setzt das gewünschte Startmuster und initialisiert das Grid entsprechend
-        private void SetzeStartmuster(Startmuster muster)
-        {
-            aktuellesMuster = muster;
-            InitGrid();
-            switch (muster)
-            {
-                case Startmuster.Schachbrett:
-                    SetzeSchachbrettmuster();
-                    break;
-                case Startmuster.Zufall:
-                    SetzeZufallsmuster();
-                    break;
-                case Startmuster.Leer:
-                default:
-                    break;
-            }
             DrawGrid();
         }
 
-        private void SetzeSchachbrettmuster()
+        private void StartButton_Click(object sender, RoutedEventArgs e)
         {
-            for (int y = 0; y < GridHeight; y++)
+            if (isRunning) return;
+            isRunning = true;
+            UpdateButtonStates();
+            cts = new CancellationTokenSource();
+            simulationTask = Task.Run(() => RunSimulation(cts.Token));
+        }
+
+        private void StopButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (!isRunning) return;
+            cts?.Cancel();
+            isRunning = false;
+            UpdateButtonStates();
+        }
+
+        private void ZoomSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            zoom = (int)ZoomSlider.Value;
+            if (ZoomValueText != null)
+                ZoomValueText.Text = $"{zoom} px";
+            DrawGrid();
+        }
+
+        private void PatternButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (isRunning)
             {
-                for (int x = 0; x < GridWidth; x++)
-                {
-                    grid[x, y] = (x + y) % 2 == 0;
-                }
+                // Pattern change is now disabled by button state, no warning needed
+                return;
+            }
+            var dialog = new PatternDialogue { Owner = this };
+            if (dialog.ShowDialog() == true)
+            {
+                gridModel.SetPattern(dialog.SelectedPattern);
+                gridModel.Ants.Clear();
+                AddAntToCenter();
+                DrawGrid();
             }
         }
 
-        private void SetzeZufallsmuster()
+        private void AddAntToCenter()
         {
-            for (int y = 0; y < GridHeight; y++)
-            {
-                for (int x = 0; x < GridWidth; x++)
-                {
-                    grid[x, y] = random.Next(2) == 0;
-                }
-            }
+            var ant = new Ant(gridModel.Width / 2, gridModel.Height / 2, Direction.Up, gridModel.Cells);
+            gridModel.AddAnt(ant);
         }
 
-        // Zeichnet das Grid und den Käfer auf das Bitmap
+        private void UpdateButtonStates()
+        {
+            StartButton.IsEnabled = !isRunning;
+            PatternButton.IsEnabled = !isRunning;
+            StopButton.IsEnabled = isRunning;
+        }
+
+        private void RunSimulation(CancellationToken token)
+        {
+            try
+            {
+                while (!token.IsCancellationRequested)
+                {
+                    gridModel.StepAll();
+                    Dispatcher.Invoke(DrawGrid);
+                    Thread.Sleep(10);
+                }
+            }
+            catch (OperationCanceledException) { }
+        }
+
         private void DrawGrid()
         {
-            int width = GridWidth * zoom;
-            int height = GridHeight * zoom;
+            int gridWidth = gridModel.Width;
+            int gridHeight = gridModel.Height;
+            bitmap = new WriteableBitmap(gridWidth * zoom, gridHeight * zoom, 96, 96, PixelFormats.Bgra32, null);
+            GridImage.Source = bitmap;
+            int width = gridWidth * zoom;
+            int height = gridHeight * zoom;
             int stride = width * 4;
             byte[] pixels = new byte[height * stride];
 
-            if (kafer == null)
-                return;
-
-            for (int y = 0; y < GridHeight; y++)
+            var grid = gridModel.Cells;
+            var ants = gridModel.Ants;
+            for (int y = 0; y < gridHeight; y++)
             {
-                for (int x = 0; x < GridWidth; x++)
+                for (int x = 0; x < gridWidth; x++)
                 {
-                    byte r, g, b;
-                    if (kafer.X == x && kafer.Y == y)
+                    byte r = 255, g = 255, b = 255; // Default to white
+                    bool isAnt = false;
+                    foreach (var ant in ants)
                     {
-                        r = 0; g = 255; b = 0; // Grün für Käfer
+                        if (ant.X == x && ant.Y == y)
+                        {
+                            r = 0; g = 255; b = 0; // Green for ant
+                            isAnt = true;
+                            break;
+                        }
                     }
-                    else if (grid[x, y])
+                    if (!isAnt)
                     {
-                        r = g = b = 0; // Schwarz
+                        if (grid[x, y].Color == AntColor.Black)
+                        {
+                            r = g = b = 0; // Black
+                        }
                     }
-                    else
-                    {
-                        r = g = b = 255; // Weiß
-                    }
-                    // Zoom
                     for (int dy = 0; dy < zoom; dy++)
                     {
                         for (int dx = 0; dx < zoom; dx++)
@@ -145,62 +158,5 @@ namespace Komax_Kaefer
             }
             bitmap.WritePixels(new Int32Rect(0, 0, width, height), pixels, stride, 0);
         }
-
-        //Aktualisiert Zoom und Darstellung.
-        private void ZoomSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
-        {
-            zoom = (int)ZoomSlider.Value;
-            if (ZoomValueText != null)
-                ZoomValueText.Text = $"{zoom} px";
-            bitmap = new WriteableBitmap(GridWidth * zoom, GridHeight * zoom, 96, 96, PixelFormats.Bgra32, null);
-            if (GridImage != null)
-                GridImage.Source = bitmap;
-            DrawGrid();
-        }
-
-        private void StartButton_Click(object sender, RoutedEventArgs e)
-        {
-            StartButton.IsEnabled = false;
-            StopButton.IsEnabled = true;
-            ZoomSlider.IsEnabled = false;
-            cts = new CancellationTokenSource();
-            simulationTask = Task.Run(() => RunSimulation(cts.Token));
-        }
-
-        private void StopButton_Click(object sender, RoutedEventArgs e)
-        {
-            cts?.Cancel();
-            StartButton.IsEnabled = true;
-            StopButton.IsEnabled = false;
-            ZoomSlider.IsEnabled = true;
-        }
-
-        private void RunSimulation(CancellationToken token)
-        {
-            try
-            {
-                while (!token.IsCancellationRequested)
-                {
-                    if (kafer == null)
-                        continue;
-                    kafer.Schritt();
-                    Dispatcher.Invoke(DrawGrid);
-                    //Thread.Sleep(10);
-                }
-            }
-            catch (OperationCanceledException) { }
-        }
-
-        // Öffnet das Muster-Auswahlfenster, übernimmt das gewählte Muster und aktualisiert das Grid
-        private void MusterButton_Click(object sender, RoutedEventArgs e)
-        {
-            var musterDialog = new MusterDialog { Owner = this };
-            if (musterDialog.ShowDialog() == true)
-            {
-                aktuellesMuster = musterDialog.GewaehltesMuster;
-                SetzeStartmuster(aktuellesMuster);
-            }
-        }
-
     }
 }

@@ -5,6 +5,8 @@ VisualStudioVersion = 17.14.36414.22 d17.14
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Komax-Kaefer", "Komax-Kaefer.csproj", "{C1017BB2-A246-4CE6-9B53-56656189C5B9}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Komax-Kaefer.Backend", "..\Komax-Kaefer.Backend\Komax-Kaefer.Backend.csproj", "{6A715B51-08E8-4668-A468-D7BCEE9485C7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{C1017BB2-A246-4CE6-9B53-56656189C5B9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C1017BB2-A246-4CE6-9B53-56656189C5B9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C1017BB2-A246-4CE6-9B53-56656189C5B9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6A715B51-08E8-4668-A468-D7BCEE9485C7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6A715B51-08E8-4668-A468-D7BCEE9485C7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6A715B51-08E8-4668-A468-D7BCEE9485C7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6A715B51-08E8-4668-A468-D7BCEE9485C7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
