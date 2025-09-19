@@ -9,6 +9,6 @@ namespace Komax_Kaefer
     /// </summary>
     public partial class App : Application
     {
+        // Entry point for the WPF application
     }
-
 }

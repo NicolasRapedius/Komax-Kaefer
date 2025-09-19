@@ -23,7 +23,7 @@ namespace Komax_Kaefer
         {
             int size = 20;
             bool[,] previewGrid = new bool[size, size];
-            var random = new Random(42); // Fixed seed for consistent preview
+            var random = new Random(42);
             switch (pattern)
             {
                 case StartPattern.Chessboard:
